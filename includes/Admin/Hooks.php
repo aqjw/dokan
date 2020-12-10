@@ -150,7 +150,23 @@ class Hooks {
                 if ( $has_sub != '1' && $seller = get_user_by( 'id', dokan_get_seller_id_by_order( $post->ID ) ) ) {
                     printf( '<a href="%s">%s</a>', esc_url( admin_url( 'edit.php?post_type=shop_order&vendor_id=' . $seller->ID ) ), esc_html( $seller->display_name ) );
                 } else {
-                    esc_html_e( '(no name)', 'dokan-lite' );
+                    $order = wc_get_order($post->ID);
+
+                    $seller_ids = [];
+                    foreach ($order->get_items() as $item) {
+                        $seller_id = $item->get_product()->post->post_author ?? null;
+                        $seller_ids[$seller_id] = $seller_id;
+                    }
+
+                    $seller_ids = array_values($seller_ids);
+                    foreach ($seller_ids as $key =>  $seller_id) {
+                        $seller = get_user_by( 'id', $seller_id );
+                        printf( '<a href="%s">%s</a>%s',
+                            esc_url( admin_url( 'edit.php?post_type=shop_order&vendor_id=' . $seller_id ) ),
+                            esc_html( $seller->display_name ),
+                            ($key+1 < count($seller_ids)) ? ',<br>' : ''
+                        );
+                    }
                 }
 
                 break;
